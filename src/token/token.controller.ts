@@ -91,7 +91,7 @@ export class TokenController {
     response
       .clearCookie(TokenController.stateKey)
       .clearCookie(TokenController.contextKey)
-      .redirect('http://localhost:3000/auth/test');
+      .redirect('http://http://localhost:3030/auth/signup/spotify');
   }
 
   private transofrmSearchParams(params: Record<string, string>) {
