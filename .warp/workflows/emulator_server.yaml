@@ -1,0 +1,11 @@
+---
+name: Start emulator server
+command: 'npm run build && cd .. && NODE_ENV=emulator firebase emulators:start'
+tags:
+  - symlink
+  - link
+description: Build and start the server with emulator configurations
+source_url: ''
+author: Alexander Hirdman
+author_url: 'https://github.com/ahirdman'
+shells: []

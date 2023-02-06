@@ -3,8 +3,8 @@ import { TokenController } from './token.controller';
 import { TokenService } from './token.service';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { IApplicationConfig } from 'config/application.config';
-import { FirestoreService } from 'src/firestore/firestore.service';
+import { IApplicationConfig } from '../../config/application.config';
+import { FirestoreService } from '../firestore/firestore.service';
 
 @Module({
   imports: [

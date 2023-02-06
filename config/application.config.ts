@@ -1,6 +1,7 @@
 export default () => ({
   BASE_URL: 'https://accounts.spotify.com',
-  REDIRECT_URI: 'http://localhost:3000/auth/callback',
+  REDIRECT_URI:
+    'http://127.0.0.1:5001/fuse-4210a/us-central1/api/token/callback',
   AUTH_SCOPE:
     'user-read-playback-state user-read-playback-position user-read-currently-playing user-read-recently-played user-read-email user-read-private user-modify-playback-state user-follow-modify user-follow-read user-library-modify user-library-read user-top-read streaming playlist-modify-private playlist-read-collaborative playlist-read-private playlist-modify-public',
   CLIENT_URL: 'http://localhost:8000',

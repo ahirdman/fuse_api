@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Timestamp } from 'firebase-admin/firestore';
-import { firestore } from 'src/lib/admin.firebase';
+import { firestore } from '../lib/admin.firebase';
 
 interface IUserDocArgDto {
   uid: string;
