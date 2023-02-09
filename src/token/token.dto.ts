@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsUUID } from 'class-validator';
 
 export class UserBodyDto {
   @IsNotEmpty()
@@ -6,6 +6,9 @@ export class UserBodyDto {
 }
 
 export class CallbackQueryDto {
+  @IsOptional()
+  public readonly error?: string;
+
   @IsNotEmpty()
   public readonly code: string;
 

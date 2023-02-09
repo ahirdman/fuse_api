@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  HttpCode,
   HttpException,
   HttpStatus,
   Query,
@@ -11,7 +10,7 @@ import {
 import { TokenService } from './token.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
-import { CallbackQueryDto } from './token.dto';
+import { CallbackQueryDto, UserBodyDto } from './token.dto';
 import { FirestoreService } from '../firestore/firestore.service';
 import { Response, Request } from 'express';
 import { IApplicationConfig } from 'config/application.config';
@@ -34,7 +33,7 @@ export class TokenController {
 
   @Get('/authorize')
   public async createSpotifyAuthLink(
-    @Query() id: string,
+    @Query() query: UserBodyDto,
     @Res({ passthrough: true }) response: Response,
   ) {
     const state = uuidv4();
@@ -49,7 +48,7 @@ export class TokenController {
 
     response
       .cookie(TokenController.stateKey, { state })
-      .cookie(TokenController.contextKey, id)
+      .cookie(TokenController.contextKey, { id: query.uid })
       .json({
         url: `${this.configService.get('BASE_URL')}/authorize?${queryParams}`,
       });
@@ -61,38 +60,45 @@ export class TokenController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const { code, state } = query;
     const stateCookie = request.cookies[TokenController.stateKey];
     const contextCookie = request.cookies[TokenController.contextKey];
 
+    response
+      .clearCookie(TokenController.stateKey)
+      .clearCookie(TokenController.contextKey);
+
+    if (query.error) {
+      response.redirect('http://127.0.0.1:3030/signup/spotify?status=denied');
+    }
+
+    const { code, state } = query;
+
     if (stateCookie.state !== state) {
-      throw new HttpException(
-        {
-          reason: `auth states did not match - expected: ${state} recieved: ${stateCookie.state}.`,
-        },
-        HttpStatus.PRECONDITION_FAILED,
+      response.redirect(
+        'http://127.0.0.1:3030/signup/spotify?status=missmatch',
       );
     }
 
-    const reqBody = this.transofrmSearchParams({
-      code,
-      redirect_uri: this.configService.get('REDIRECT_URI'),
-      grant_type: 'authorization_code',
-    });
+    try {
+      const reqBody = this.transofrmSearchParams({
+        code,
+        redirect_uri: this.configService.get('REDIRECT_URI'),
+        grant_type: 'authorization_code',
+      });
 
-    const { access_token, refresh_token } =
-      await this.tokenService.getInitalToken(reqBody);
+      const { access_token, refresh_token } =
+        await this.tokenService.getInitalToken(reqBody);
 
-    await this.firestoreService.setUserDocSpotifyMap({
-      accessToken: access_token,
-      refreshToken: refresh_token,
-      uid: contextCookie.id,
-    });
+      await this.firestoreService.setUserDocSpotifyMap({
+        accessToken: access_token,
+        refreshToken: refresh_token,
+        uid: contextCookie.id,
+      });
 
-    response
-      .clearCookie(TokenController.stateKey)
-      .clearCookie(TokenController.contextKey)
-      .redirect('http://127.0.0.1:3030/auth/signup/spotify');
+      response.redirect('http://127.0.0.1:3030/signup/spotify?status=success');
+    } catch (error) {
+      response.redirect('http://127.0.0.1:3030/signup/spotify?status=error');
+    }
   }
 
   private transofrmSearchParams(params: Record<string, string>) {
