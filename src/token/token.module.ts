@@ -11,11 +11,11 @@ import { FirestoreService } from '../firestore/firestore.service';
     HttpModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService<IApplicationConfig>) => ({
-        baseURL: configService.get('BASE_URL'),
+        baseURL: configService.get('SPOTIFY_BASE_URL'),
         headers: {
           Authorization: `Basic ${Buffer.from(
-            `${configService.get('CLIENT_ID')}:${configService.get(
-              'CLIENT_SECRET',
+            `${configService.get('SPOTIFY_CLIENT_ID')}:${configService.get(
+              'SPOTIFY_CLIENT_SECRET',
             )}`,
           ).toString('base64')}`,
         },

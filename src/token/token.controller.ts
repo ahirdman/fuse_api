@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  HttpException,
-  HttpStatus,
-  Query,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Controller, Get, Query, Req, Res } from '@nestjs/common';
 import { TokenService } from './token.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
@@ -19,6 +11,7 @@ import { IApplicationConfig } from 'config/application.config';
 export class TokenController {
   private static stateKey = 'spotify_auth_state';
   private static contextKey = 'sessionContext';
+  private static signUpStatusPath = '/signup/spotify?status=';
 
   constructor(
     private readonly configService: ConfigService<IApplicationConfig>,
@@ -40,9 +33,9 @@ export class TokenController {
 
     const queryParams = this.transofrmSearchParams({
       response_type: 'code',
-      client_id: this.configService.get('CLIENT_ID'),
-      scope: this.configService.get('AUTH_SCOPE'),
-      redirect_uri: this.configService.get('REDIRECT_URI'),
+      client_id: this.configService.get('SPOTIFY_CLIENT_ID'),
+      scope: this.configService.get('SPOTIFY_AUTH_SCOPE'),
+      redirect_uri: this.configService.get('SPOTIFY_REDIRECT_URI'),
       state,
     });
 
@@ -50,7 +43,9 @@ export class TokenController {
       .cookie(TokenController.stateKey, { state })
       .cookie(TokenController.contextKey, { id: query.uid })
       .json({
-        url: `${this.configService.get('BASE_URL')}/authorize?${queryParams}`,
+        url: `${this.configService.get(
+          'SPOTIFY_BASE_URL',
+        )}/authorize?${queryParams}`,
       });
   }
 
@@ -68,21 +63,27 @@ export class TokenController {
       .clearCookie(TokenController.contextKey);
 
     if (query.error) {
-      response.redirect('http://127.0.0.1:3030/signup/spotify?status=denied');
+      response.redirect(
+        `${this.configService.get('CLIENT_BASE_URL')}${
+          TokenController.signUpStatusPath
+        }denied`,
+      );
     }
 
     const { code, state } = query;
 
     if (stateCookie.state !== state) {
       response.redirect(
-        'http://127.0.0.1:3030/signup/spotify?status=missmatch',
+        `${this.configService.get('CLIENT_BASE_URL')}${
+          TokenController.signUpStatusPath
+        }error`,
       );
     }
 
     try {
       const reqBody = this.transofrmSearchParams({
         code,
-        redirect_uri: this.configService.get('REDIRECT_URI'),
+        redirect_uri: this.configService.get('SPOTIFY_REDIRECT_URI'),
         grant_type: 'authorization_code',
       });
 
@@ -95,9 +96,17 @@ export class TokenController {
         uid: contextCookie.id,
       });
 
-      response.redirect('http://127.0.0.1:3030/signup/spotify?status=success');
+      response.redirect(
+        `${this.configService.get('CLIENT_BASE_URL')}${
+          TokenController.signUpStatusPath
+        }success`,
+      );
     } catch (error) {
-      response.redirect('http://127.0.0.1:3030/signup/spotify?status=error');
+      response.redirect(
+        `${this.configService.get('CLIENT_BASE_URL')}${
+          TokenController.signUpStatusPath
+        }error`,
+      );
     }
   }
 

@@ -13,7 +13,9 @@ export class TokenService {
   ) {}
 
   public async getInitalToken(body: string): Promise<AuthorizedTokenResponse> {
-    const url = `${this.spotifyConfiguration.get('BASE_URL')}/api/token`;
+    const url = `${this.spotifyConfiguration.get(
+      'SPOTIFY_BASE_URL',
+    )}/api/token`;
 
     const { data } = await firstValueFrom(
       this.httpService.post(url, body).pipe(

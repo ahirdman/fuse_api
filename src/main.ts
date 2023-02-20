@@ -34,17 +34,14 @@ async function createNestServer(expressInstance: Express) {
 
 export let api: null | functions.HttpsFunction = null;
 
-if (
-  process.env.NODE_ENV === 'emulator' ||
-  process.env.NODE_ENV === 'production'
-) {
-  console.log('Starting Emulator Server');
+if (process.env.NODE_ENV === 'development') {
+  bootstrap();
+} else {
   const server: Express = express();
 
   createNestServer(server);
 
-  api = functions.runWith({ secrets: ['CLIENT_ID'] }).https.onRequest(server);
-} else {
-  console.log('Starting Local Server');
-  bootstrap();
+  api = functions
+    .runWith({ secrets: ['SPOTIFY_CLIENT_ID', 'SPOTIFY_CLIENT_SECRET'] })
+    .https.onRequest(server);
 }

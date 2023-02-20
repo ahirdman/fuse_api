@@ -9,7 +9,7 @@ import { TokenModule } from '../token/token.module';
     HttpModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService<IApplicationConfig>) => ({
-        baseURL: configService.get('BASE_URL'),
+        baseURL: configService.get('SPOTIFY_BASE_URL'),
       }),
       inject: [ConfigService],
     }),
